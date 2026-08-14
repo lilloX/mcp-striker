@@ -7,8 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from mcp_striker.report import FindingRecord, ProbeMetrics, ReportData, ReportGenerator
-
+from mcp_striker.report import ReportGenerator
 
 # ---------------------------------------------------------------------------
 # Helpers

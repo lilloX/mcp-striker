@@ -13,7 +13,6 @@ from mcp_striker.models import (
     JsonRpcRequest,
     JsonRpcResponse,
     SafetyContext,
-    TransportExchange,
 )
 from mcp_striker.registry import CapabilityRegistry, McpTool
 from mcp_striker.safety import SafetyPolicyEngine
@@ -239,7 +238,7 @@ def test_selector_multi_pattern_and_semantics() -> None:
     })
     # Only has read_file — missing fetch → should be skipped
     registry = _registry_with_tools("read_file")
-    selected, skipped = selector.select_with_report([module], registry)
+    selected, _skipped = selector.select_with_report([module], registry)
     assert module not in selected
 
 

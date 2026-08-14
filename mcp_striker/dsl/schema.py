@@ -89,7 +89,7 @@ class StepSpec(BaseModel):
 
     @field_validator("matchers", mode="before")
     @classmethod
-    def _coerce_matchers_none(cls, v: Any) -> list:
+    def _coerce_matchers_none(cls, v: Any) -> list[MatcherSpec]:
         return v if v is not None else []
     # If True, failures in this step are silently ignored.
     optional: bool = False

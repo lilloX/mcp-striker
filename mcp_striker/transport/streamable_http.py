@@ -22,8 +22,6 @@ Timeouts and HTTP-level errors are surfaced via ``TransportExchange.probe_failed
 
 from __future__ import annotations
 
-import json
-
 import httpx
 
 from mcp_striker.models import (

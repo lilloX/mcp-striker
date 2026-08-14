@@ -14,36 +14,35 @@ from __future__ import annotations
 import asyncio
 import re
 import shlex
+import sys
 import uuid
 from pathlib import Path
-from typing import Annotated
-
-import sys
+from typing import Annotated, Any
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from mcp_striker.dsl.parser import FlowParseError, YAMLFlowParser
+from mcp_striker.dsl.selector import ModuleSelector
+from mcp_striker.engine.auth_diff import AuthDiffEngine
+from mcp_striker.engine.flow import FlowEngine
 from mcp_striker.engine.strike import StrikeEngine
 from mcp_striker.engine.transport_probe import TransportProbeEngine
 from mcp_striker.evidence import EvidenceGenerator
+from mcp_striker.identity import IdentityManager
 from mcp_striker.models import SafetyContext, TransportContext
+from mcp_striker.ownership import OwnershipRegistry
 from mcp_striker.protocol.client import ProtocolClient
 from mcp_striker.recorder import SessionRecorder
 from mcp_striker.registry import CapabilityRegistry
-from mcp_striker.safety import SafetyPolicyEngine
-from mcp_striker.transport.stdio import StdioTransport
-from mcp_striker.transport.sse import SseTransport
-from mcp_striker.transport.streamable_http import StreamableHttpTransport
-from mcp_striker.engine.auth_diff import AuthDiffEngine
-from mcp_striker.engine.flow import FlowEngine
 from mcp_striker.report import ReportGenerator
-from mcp_striker.scaffold import ScaffoldGenerator, SAMPLE_BLOCKED
-from mcp_striker.dsl.parser import YAMLFlowParser, FlowParseError
-from mcp_striker.dsl.selector import ModuleSelector
-from mcp_striker.identity import IdentityManager
-from mcp_striker.ownership import OwnershipRegistry
+from mcp_striker.safety import SafetyPolicyEngine
+from mcp_striker.scaffold import SAMPLE_BLOCKED, ScaffoldGenerator
+from mcp_striker.transport.sse import SseTransport
+from mcp_striker.transport.stdio import StdioTransport
+from mcp_striker.transport.streamable_http import StreamableHttpTransport
 
 app = typer.Typer(
     name="mcp-striker",
@@ -281,8 +280,8 @@ async def _enum(
     )
     if registry.resource_templates:
         _console().print(f"[bold yellow][!][/] Found [bold]{len(registry.resource_templates)}[/] resource template(s):")
-        for t in registry.resource_templates:
-            _console().print(f"    - {t.uri_template}  [dim]({t.description or 'no description'})[/]")
+        for template in registry.resource_templates:
+            _console().print(f"    - {template.uri_template}  [dim]({template.description or 'no description'})[/]")
     if registry.resources:
         _console().print(f"[bold cyan][+][/] Found [bold]{len(registry.resources)}[/] resource(s):")
         for r in registry.resources:
@@ -296,13 +295,13 @@ async def _enum(
         )
         from mcp_striker.tool_classifier import ToolClassifier
         clf = ToolClassifier()
-        for t in registry.tools:
-            cls = clf.classify(t.name, t.description)
+        for tool in registry.tools:
+            cls = clf.classify(tool.name, tool.description)
             colour = {"read_only": "green", "mutating": "red", "unknown": "yellow"}[cls.value]
-            params = list((t.input_schema.get("properties") or {}).keys())
+            params = list((tool.input_schema.get("properties") or {}).keys())
             param_str = f"  params: {params}" if params else ""
             _console().print(
-                f"    [{colour}]{t.name}[/] [{colour}]({cls.value})[/]"
+                f"    [{colour}]{tool.name}[/] [{colour}]({cls.value})[/]"
                 f"{param_str}"
             )
 
@@ -378,6 +377,7 @@ async def _strike(
     # Pick transport based on what was stored in the registry.
     # --transport overrides the saved value (useful when enum was run with wrong transport).
     effective_transport = transport_override or registry.target_transport
+    mcp_transport: SseTransport | StreamableHttpTransport | StdioTransport
     if registry.target_url:
         if effective_transport == "sse":
             mcp_transport = SseTransport(
@@ -490,7 +490,7 @@ async def _strike(
             )
             _console().print(
                 f"[bold cyan][~][/] Running module: [bold]resource-path-traversal[/] "
-                f"({len(registry.resource_templates)} template(s) × probes)"
+                f"({len(registry.resource_templates)} template(s) x probes)"
             )
             finding_ids = await engine.run()
             run_failures = engine.failures
@@ -572,9 +572,10 @@ async def _http_probe(
             output_dir = Path(".mcp-striker") / server_slug
     else:
         # Auto-derive output dir from URL hostname if not explicitly set.
+        assert url is not None  # enforced by the public command
         if output_dir is None:
             from urllib.parse import urlparse
-            hostname = urlparse(url).hostname or "http-server"  # type: ignore[arg-type]
+            hostname = urlparse(url).hostname or "http-server"
             output_dir = Path(".mcp-striker") / _safe_filename(hostname)
 
     assert url is not None  # guaranteed by the checks above
@@ -877,9 +878,10 @@ async def _collect_sample_responses(
     Connection errors are caught silently — scaffold proceeds without samples.
     """
     import json as _json
+
+    from mcp_striker.models import JsonRpcRequest
     from mcp_striker.scaffold import ScaffoldGenerator as _SG
     from mcp_striker.tool_classifier import ToolClassifier
-    from mcp_striker.models import JsonRpcRequest
 
     sg = _SG()
     clf = ToolClassifier()
@@ -939,7 +941,7 @@ async def _collect_sample_responses(
                     continue
 
                 # Build arguments with empty string for all string params.
-                props: dict = (st.tool.input_schema or {}).get("properties") or {}
+                props: dict[str, Any] = (st.tool.input_schema or {}).get("properties") or {}
                 arguments: dict[str, str] = {
                     k: "" for k, v in props.items()
                     if isinstance(v, dict) and v.get("type", "string") in ("string", "")

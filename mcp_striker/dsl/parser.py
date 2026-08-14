@@ -20,7 +20,6 @@ from mcp_striker.dsl.schema import FlowModule, MatcherSpec
 from mcp_striker.models import TransportExchange
 from mcp_striker.modules.resource_path_traversal import Matcher
 
-
 # ---------------------------------------------------------------------------
 # Exceptions
 # ---------------------------------------------------------------------------

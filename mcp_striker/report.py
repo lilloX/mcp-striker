@@ -20,7 +20,6 @@ non-Python files in wheel distributions.
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -219,7 +218,6 @@ class ReportGenerator:
         # Warn if findings reference multiple different server names.
         # This happens when --output-dir was not used to separate test runs.
         if findings:
-            unique_modules = {f.module for f in findings}
             # Check if session exchanges come from multiple distinct server registries
             server_names = self._load_all_server_names(sessions_dir)
             if len(server_names) > 1:
@@ -257,34 +255,34 @@ class ReportGenerator:
         lines: list[str] = []
         lines += [
             f"# {data.title}",
-            f"",
+            "",
             f"**Server:** {data.server_name} v{data.server_version}  ",
             f"**Protocol:** {data.protocol_version}  ",
             f"**Transport:** {data.transport}  ",
             f"**Generated:** {data.generated_at}  ",
-            f"",
-            f"---",
-            f"",
-            f"## Executive Summary",
-            f"",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "",
+            "---",
+            "",
+            "## Executive Summary",
+            "",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Findings confirmed | {len(data.findings)} |",
             f"| Probes sent | {data.metrics.total} |",
             f"| Probes blocked (SafetyPolicy) | {data.metrics.blocked} |",
             f"| Probes failed | {data.metrics.failed} |",
             f"| Sessions run | {data.metrics.sessions} |",
             f"| Tools enumerated | {len(data.tools_enumerated)} |",
-            f"",
+            "",
         ]
 
         # Severity summary
         counts = data.severity_counts
         lines += [
-            f"### Findings by Severity",
-            f"",
-            f"| Severity | Count |",
-            f"|----------|-------|",
+            "### Findings by Severity",
+            "",
+            "| Severity | Count |",
+            "|----------|-------|",
         ]
         for sev in ("critical", "high", "medium", "low", "info"):
             if counts.get(sev, 0) > 0:
@@ -306,11 +304,11 @@ class ReportGenerator:
                     "",
                 ]
         else:
-            lines += [f"---", f"", f"## Findings", f""]
+            lines += ["---", "", "## Findings", ""]
             for i, finding in enumerate(data.sorted_findings, 1):
                 lines += [
                     f"### [{finding.severity.upper()}] {finding.finding_id} — {finding.vuln_class}",
-                    f"",
+                    "",
                     f"**Module:** `{finding.module}`  ",
                     f"**Method:** `{finding.method}`  ",
                 ]
@@ -318,45 +316,45 @@ class ReportGenerator:
                     lines += [f"**Payload:** `{finding.payload}`  "]
                 lines += [
                     f"**Matchers:** {', '.join(f'`{m}`' for m in finding.matchers_hit)}  ",
-                    f"",
-                    f"<details><summary>Request</summary>",
-                    f"",
-                    f"```json",
+                    "",
+                    "<details><summary>Request</summary>",
+                    "",
+                    "```json",
                     json.dumps(finding.raw_request, indent=2),
-                    f"```",
-                    f"",
-                    f"</details>",
-                    f"",
+                    "```",
+                    "",
+                    "</details>",
+                    "",
                 ]
                 if finding.raw_response:
                     lines += [
-                        f"<details><summary>Response (proof)</summary>",
-                        f"",
-                        f"```json",
+                        "<details><summary>Response (proof)</summary>",
+                        "",
+                        "```json",
                         json.dumps(finding.raw_response, indent=2)[:4000],
-                        f"```",
-                        f"",
-                        f"</details>",
-                        f"",
+                        "```",
+                        "",
+                        "</details>",
+                        "",
                     ]
 
         if data.tools_enumerated:
             lines += [
-                f"---",
-                f"",
-                f"## Tested Surface",
-                f"",
+                "---",
+                "",
+                "## Tested Surface",
+                "",
                 f"**Tools enumerated ({len(data.tools_enumerated)}):**",
-                f"",
+                "",
             ]
             for t in data.tools_enumerated:
                 lines.append(f"- `{t}`")
             lines.append("")
 
         lines += [
-            f"---",
-            f"",
-            f"*Report generated by [mcp-striker](https://github.com/anthropics/mcp-striker)*",
+            "---",
+            "",
+            "*Report generated by [mcp-striker](https://github.com/lilloX/mcp-striker)*",
         ]
         return "\n".join(lines)
 
@@ -488,9 +486,9 @@ class ReportGenerator:
         )
         for snap in snapshots:
             try:
-                data = json.loads(snap.read_text())
-                if "server_name" in data:
-                    return data
+                data: object = json.loads(snap.read_text())
+                if isinstance(data, dict) and "server_name" in data:
+                    return {str(key): value for key, value in data.items()}
             except Exception:
                 continue
         return {}

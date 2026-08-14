@@ -115,9 +115,9 @@ def _exchange_to_dicts(
         if isinstance(resp_parsed, dict):
             redacted = _redact(resp_parsed, extra_keys)
             if isinstance(redacted, dict):
-                clean_resp = redacted  # type: ignore[assignment]
+                clean_resp = redacted
 
-    return clean_req, clean_resp  # type: ignore[return-value]
+    return clean_req, clean_resp
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +170,7 @@ class DiffFinding(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _extract_payload(method: str, params: dict) -> str:
+def _extract_payload(method: str, params: dict[str, Any]) -> str:
     """Extract the human-readable probe payload from request params.
 
     For ``resources/read`` the payload is the ``uri`` param.
@@ -265,7 +265,7 @@ class EvidenceGenerator:
             payload=payload,
             probe_description=probe_description,
             matchers_hit=matchers_hit,
-            raw_request=clean_req,  # type: ignore[arg-type]
+            raw_request=clean_req,
             raw_response=clean_resp,
         ))
 
@@ -308,8 +308,8 @@ class EvidenceGenerator:
             verdict=diff_result.verdict.value,
             data_leaked=diff_result.similarity_score >= 0.8,
             similarity_score=diff_result.similarity_score,
-            raw_owner_request=owner_req,  # type: ignore[arg-type]
+            raw_owner_request=owner_req,
             raw_owner_response=owner_resp,
-            raw_attacker_request=attacker_req,  # type: ignore[arg-type]
+            raw_attacker_request=attacker_req,
             raw_attacker_response=attacker_resp,
         ))

@@ -18,6 +18,7 @@ in the ``FlowContext`` before running the module's steps.
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from mcp_striker.dsl.schema import FlowModule
 from mcp_striker.registry import CapabilityRegistry
@@ -99,7 +100,9 @@ class ModuleSelector:
         tool = next((t for t in registry.tools if t.name == tool_name), None)
         if tool is None:
             return ""
-        properties: dict = (tool.input_schema or {}).get("properties") or {}
+        properties: dict[str, Any] = (
+            (tool.input_schema or {}).get("properties") or {}
+        )
         compiled = re.compile(pattern_str, re.IGNORECASE)
         for param_name, param_schema in properties.items():
             # Only inject into string-typed parameters.

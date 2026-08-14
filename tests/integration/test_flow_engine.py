@@ -164,7 +164,6 @@ async def test_cleanup_step_failure_does_not_crash(tmp_path: Path) -> None:
     )
     try:
         # Build a module with a cleanup step that calls an unsupported method.
-        import yaml
         raw = {
             "version": "1",
             "name": "test-cleanup",
@@ -202,7 +201,7 @@ async def test_cleanup_step_failure_does_not_crash(tmp_path: Path) -> None:
 @pytest.mark.asyncio
 async def test_module_selector_skips_inapplicable_modules(tmp_path: Path) -> None:
     """Modules that require capabilities the server doesn't have must be skipped."""
-    from mcp_striker.dsl.schema import FlowModule, RequiresSpec
+    from mcp_striker.dsl.schema import FlowModule
     from mcp_striker.registry import CapabilityRegistry
 
     requires_tools_module_raw = {
@@ -252,7 +251,6 @@ async def test_real_modules_dir_loads_and_runs(tmp_path: Path) -> None:
     try:
         all_modules = parser.load_directory(MODULES_DIR)
         # Get the registry to check module applicability.
-        from mcp_striker.registry import McpResourceTemplate
         registry = engine._registry  # type: ignore[attr-defined]
         selector = ModuleSelector()
         selected, _ = selector.select_with_report(all_modules, registry)

@@ -18,7 +18,6 @@ import pytest
 from mcp_striker.engine.auth_diff import AuthDiffEngine
 from mcp_striker.evidence import EvidenceGenerator
 from mcp_striker.identity import IdentityManager
-from mcp_striker.models import DiffVerdict
 from mcp_striker.ownership import OwnershipRegistry
 from mcp_striker.recorder import SessionRecorder
 
@@ -139,7 +138,6 @@ async def test_http_idor_detected(http_idor_server: str, tmp_path: Path) -> None
 async def test_http_idor_tokens_redacted_in_artifacts(
     http_idor_server: str, tmp_path: Path
 ) -> None:
-    import json
     engine = _build_engine(tmp_path, transport_type="http", base_url=http_idor_server)
     finding_ids = await engine.run()
     for fid in finding_ids:
@@ -160,7 +158,7 @@ async def test_clean_stdio_server_no_idor_findings(tmp_path: Path) -> None:
     We use a custom ownership fixture pointing at URIs the clean server knows
     and that it correctly gates behind identity checks.
     """
-    import tempfile, yaml as _yaml  # type: ignore[import]
+    import yaml as _yaml  # type: ignore[import]
 
     # The clean STDIO server (stdio_clean.py) has no multi-tenant resources
     # at all — any resources/read will fail for both identities, producing

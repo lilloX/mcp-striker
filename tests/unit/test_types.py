@@ -8,8 +8,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mcp_striker.types import JsonObject, JsonValue, _validate, parse_json_value
-
+from mcp_striker.types import _validate, parse_json_value
 
 # ---------------------------------------------------------------------------
 # parse_json_value

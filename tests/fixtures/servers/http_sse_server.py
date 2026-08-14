@@ -9,14 +9,13 @@ Usage: python http_sse_server.py [--port PORT]
 Prints the bound port to stdout on startup.
 """
 from __future__ import annotations
+
 import argparse
-import asyncio
 import json
 import queue
 import threading
 import uuid
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
 
 # Per-session response queues: session_id → queue of json strings
 _sessions: dict[str, queue.Queue] = {}
@@ -24,11 +23,13 @@ _sessions_lock = threading.Lock()
 
 
 class SseHandler(BaseHTTPRequestHandler):
-    def log_message(self, *_): pass  # noqa
+    def log_message(self, *_): pass
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):
         if self.path != "/sse":
-            self.send_response(404); self.end_headers(); return
+            self.send_response(404)
+            self.end_headers()
+            return
 
         session_id = str(uuid.uuid4())[:8]
         q: queue.Queue = queue.Queue()
@@ -65,11 +66,13 @@ class SseHandler(BaseHTTPRequestHandler):
             with _sessions_lock:
                 _sessions.pop(session_id, None)
 
-    def do_POST(self):  # noqa: N802
-        from urllib.parse import urlparse, parse_qs
+    def do_POST(self):
+        from urllib.parse import parse_qs, urlparse
         parsed = urlparse(self.path)
         if parsed.path != "/msg":
-            self.send_response(404); self.end_headers(); return
+            self.send_response(404)
+            self.end_headers()
+            return
 
         params = parse_qs(parsed.query)
         session_id = params.get("session", [None])[0]
@@ -87,7 +90,9 @@ class SseHandler(BaseHTTPRequestHandler):
         try:
             msg = json.loads(body)
         except json.JSONDecodeError:
-            self.send_response(400); self.end_headers(); return
+            self.send_response(400)
+            self.end_headers()
+            return
 
         response = self._dispatch(msg)
         if response:

@@ -21,6 +21,11 @@ dependencies = [
     "jinja2>=3.1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/lilloX/mcp-striker"
+Documentation = "https://github.com/lilloX/mcp-striker/tree/main/docs"
+Issues = "https://github.com/lilloX/mcp-striker/issues"
+
 # Optional: only needed to run the bundled demo target `real_vulnerable_server.py`
 # (the official Python MCP SDK). Not required by mcp-striker itself or its tests.
 [project.optional-dependencies]
@@ -38,6 +43,7 @@ dependencies = [
     "mypy>=1.10",
     "ruff>=0.6",
     "pydantic>=2.0",
+    "types-PyYAML>=6.0",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -50,11 +56,16 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "ASYNC", "RUF", "I"]
+ignore = ["E501", "ASYNC109"]
 
 [tool.mypy]
 strict          = true
 python_version  = "3.12"
 plugins         = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["jsonpath_ng", "jsonpath_ng.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

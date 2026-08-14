@@ -20,7 +20,7 @@ Dynamic MCP validators already exist, but most drive the target through a real L
 **Prerequisites:** Python 3.12+, Node.js 18+ (only if testing JavaScript MCP servers)
 
 ```bash
-git clone <repo>
+git clone https://github.com/lilloX/mcp-striker.git
 cd mcp-striker
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
@@ -35,6 +35,9 @@ This installs all dependencies declared in `pyproject.toml`:
 ## 🚀 Engagement Walkthrough
 
 A complete engagement from first connection to final report.
+
+For a captured assessment with complete commands, output, and evidence, see
+[VulnerableMCP — Full Security Assessment Walkthrough](docs/walkthrough-vulnerable-mcp-server.md).
 
 ### Step 1 — Enumerate the attack surface
 

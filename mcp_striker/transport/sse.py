@@ -38,7 +38,6 @@ from mcp_striker.models import (
 )
 from mcp_striker.transport.base import McpTransport
 
-
 # Cap on a single SSE event, so a malicious server cannot exhaust memory.
 _MAX_EVENT_BYTES = 32 * 1024 * 1024  # 32 MiB
 
@@ -77,8 +76,8 @@ class SseTransport(McpTransport):
 
         self._message_endpoint: str | None = None
         self._endpoint_ready: asyncio.Event | None = None
-        self._pending: dict[int | str, asyncio.Future] = {}
-        self._sse_task: asyncio.Task | None = None
+        self._pending: dict[int | str, asyncio.Future[object]] = {}
+        self._sse_task: asyncio.Task[None] | None = None
 
     async def connect(self) -> None:
         """Open the SSE stream and wait for the server to send the endpoint URL."""
@@ -155,7 +154,7 @@ class SseTransport(McpTransport):
             return TransportExchange(request=request)
 
         loop = asyncio.get_running_loop()
-        fut: asyncio.Future = loop.create_future()
+        fut: asyncio.Future[object] = loop.create_future()
         req_id = request.id
         self._pending[req_id] = fut
 

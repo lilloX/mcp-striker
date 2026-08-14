@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -13,7 +14,7 @@ class McpTool(BaseModel):
     name: str
     description: str = ""
     # Raw JSON Schema of the tool's input parameters (from inputSchema field).
-    input_schema: dict = {}
+    input_schema: dict[str, Any] = {}
 
 
 class McpResource(BaseModel):

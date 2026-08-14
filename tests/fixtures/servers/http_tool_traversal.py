@@ -18,10 +18,10 @@ from pathlib import Path
 
 
 class VulnerableToolHandler(BaseHTTPRequestHandler):
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         if self.path != "/mcp":
             self._send(404, {"error": "not found"})
             return

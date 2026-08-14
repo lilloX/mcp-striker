@@ -188,7 +188,7 @@ class DiffResult(BaseModel):
     attacker_name: str
     owner_exchange: TransportExchange
     attacker_exchange: TransportExchange
-    # 0.0–1.0 text similarity between the two responses.
+    # 0.0-1.0 text similarity between the two responses.
     # Informational only — does NOT gate the verdict.
     # >= 0.8 → data_leaked flag is set in the finding artifact.
     similarity_score: float = 0.0

@@ -8,8 +8,13 @@ import pytest
 import yaml
 
 from mcp_striker.registry import CapabilityRegistry, McpResourceTemplate, McpTool
-from mcp_striker.scaffold import ScaffoldGenerator, _classify_param, _classify_placeholder, _slugify
-
+from mcp_striker.scaffold import (
+    SAMPLE_BLOCKED,
+    ScaffoldGenerator,
+    _classify_param,
+    _classify_placeholder,
+    _slugify,
+)
 
 # ---------------------------------------------------------------------------
 # _classify_param
@@ -265,7 +270,6 @@ def test_scaffold_with_real_chrome_devtools_tools(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-from mcp_striker.scaffold import SAMPLE_BLOCKED
 
 
 def test_scaffold_sample_response_in_yaml(tmp_path: Path) -> None:

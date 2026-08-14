@@ -1,7 +1,7 @@
 """StrikeEngine — the dumb orchestrator.
 
 Responsibilities:
-    1. Iterate over every (resource template × probe) combination.
+    1. Iterate over every resource-template/probe combination.
     2. Substitute the probe payload into the URI template.
     3. Ask ``SafetyPolicyEngine`` for permission.
     4. Send via transport (if allowed) or record a blocked exchange.

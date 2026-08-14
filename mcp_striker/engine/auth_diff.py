@@ -139,7 +139,7 @@ class DiffMatcher:
 
     @staticmethod
     def _similarity(a: TransportExchange, b: TransportExchange) -> float:
-        """Return a 0.0–1.0 text similarity score between the two responses."""
+        """Return a 0.0-1.0 text similarity score between the two responses."""
         text_a = a.response.get_text_content() if a.response else ""
         text_b = b.response.get_text_content() if b.response else ""
         if not text_a and not text_b:

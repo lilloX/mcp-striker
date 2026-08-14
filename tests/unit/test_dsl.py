@@ -8,7 +8,7 @@ import pytest
 
 from mcp_striker.dsl.context import FlowContext, _collect_var_names, _substitute_all
 from mcp_striker.dsl.parser import FlowParseError, YAMLFlowParser
-from mcp_striker.dsl.schema import FlowModule, MatcherSpec, RequiresSpec, StepSpec
+from mcp_striker.dsl.schema import FlowModule, MatcherSpec, StepSpec
 from mcp_striker.dsl.selector import ModuleSelector
 from mcp_striker.registry import CapabilityRegistry, McpResource, McpResourceTemplate
 
@@ -272,7 +272,7 @@ def test_selector_skips_module_when_template_pattern_not_matched() -> None:
     module = parser.load(FLOWS_DIR / "valid_path_traversal.yaml")
     # valid_path_traversal requires resource_templates matching "file://"
     registry = _make_registry(has_resources=True, templates=["resource://{id}"])
-    selected, skipped = selector.select_with_report([module], registry)
+    selected, _skipped = selector.select_with_report([module], registry)
     assert module not in selected
 
 
@@ -301,6 +301,7 @@ def test_flow_engine_accepts_dry_run_parameter() -> None:
     """FlowEngine can be constructed with dry_run=True without error."""
     import asyncio
     from unittest.mock import MagicMock
+
     from mcp_striker.engine.flow import FlowEngine
     from mcp_striker.models import SafetyContext, TransportContext
 
@@ -322,6 +323,7 @@ def test_flow_engine_accepts_dry_run_parameter() -> None:
 def _safety_engine(transport, recorder):  # type: ignore[no-untyped-def]
     import asyncio
     from unittest.mock import MagicMock
+
     from mcp_striker.engine.flow import FlowEngine
     from mcp_striker.models import SafetyContext, TransportContext
     from mcp_striker.safety import SafetyPolicyEngine
@@ -343,6 +345,7 @@ def test_setup_step_tools_call_blocked_by_safety() -> None:
     without --allow-mutating."""
     import asyncio
     from unittest.mock import AsyncMock, MagicMock
+
     from mcp_striker.dsl.context import FlowContext
 
     transport = MagicMock()
@@ -381,6 +384,7 @@ def test_cleanup_exchange_is_recorded() -> None:
     """A cleanup that actually runs must be recorded in the transcript (R#11)."""
     import asyncio
     from unittest.mock import AsyncMock, MagicMock
+
     from mcp_striker.models import JsonRpcRequest, TransportExchange
 
     exchange = TransportExchange(request=JsonRpcRequest(id=1, method="tools/list"))
@@ -462,6 +466,7 @@ def test_setup_step_allowlisted_method_is_sent() -> None:
     """An allowlisted read method (resources/list) still goes out."""
     import asyncio
     from unittest.mock import AsyncMock, MagicMock
+
     from mcp_striker.dsl.context import FlowContext
     from mcp_striker.models import JsonRpcRequest, TransportExchange
 

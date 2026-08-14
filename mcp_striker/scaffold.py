@@ -56,6 +56,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -386,7 +387,7 @@ class ScaffoldGenerator:
 
     def _find_injectable_params(self, tool: McpTool) -> list[ScaffoldParam]:
         """Return all string-typed parameters for a tool."""
-        props: dict = (tool.input_schema or {}).get("properties") or {}
+        props: dict[str, Any] = (tool.input_schema or {}).get("properties") or {}
         params: list[ScaffoldParam] = []
         for name, schema in props.items():
             if not isinstance(schema, dict):
@@ -411,7 +412,7 @@ class ScaffoldGenerator:
         injectable_names: set[str],
     ) -> list[ScaffoldExtraParam]:
         """Return non-injectable parameters (required first, then optional)."""
-        props: dict = (tool.input_schema or {}).get("properties") or {}
+        props: dict[str, Any] = (tool.input_schema or {}).get("properties") or {}
         required_set: set[str] = set((tool.input_schema or {}).get("required") or [])
         params: list[ScaffoldExtraParam] = []
         for name, schema in props.items():
@@ -481,16 +482,12 @@ class ScaffoldGenerator:
             return ""
 
         injectable_names = [p.name for p in st.injectable_params]
-        # Use the category of the primary param for payload/matcher suggestions.
-        category = primary.category
-        payloads = _PAYLOAD_SUGGESTIONS.get(category, _PAYLOAD_SUGGESTIONS["unknown"])
-        matchers = _MATCHER_SUGGESTIONS.get(category, _MATCHER_SUGGESTIONS["unknown"])
 
         lines: list[str] = []
 
         # Header comment
         lines += [
-            f"# AUTO-GENERATED SCAFFOLD — review and customize before running",
+            "# AUTO-GENERATED SCAFFOLD — review and customize before running",
             f"# Server : {_yaml_comment(registry.server_name)} (Protocol {registry.protocol_version})",
             f"# Tool   : {_yaml_comment(tool.name)}",
         ]
@@ -499,38 +496,38 @@ class ScaffoldGenerator:
             lines.append(f"# Desc   : {desc_oneline}")
         lines.append(f"# Injectable params: {', '.join(repr(n) for n in injectable_names)}")
         lines += [
-            f"#",
-            f"# HOW TO USE:",
-            f"#   1. Fill in required placeholder values (marked '# required')",
-            f"#   2. Uncomment the payloads you want to test",
-            f"#   3. Adjust the regex matcher pattern",
-            f"#   4. Run: mcp-striker strike --from-enum <snapshot.json> \\",
-            f"#            --module <this-file> [--allow-mutating]",
-            f"#",
-            f"# NOTE: One step per injectable parameter — each tests a different injection point.",
-            f"#       Not all suggested payloads may be applicable to every parameter.",
+            "#",
+            "# HOW TO USE:",
+            "#   1. Fill in required placeholder values (marked '# required')",
+            "#   2. Uncomment the payloads you want to test",
+            "#   3. Adjust the regex matcher pattern",
+            "#   4. Run: mcp-striker strike --from-enum <snapshot.json> \\",
+            "#            --module <this-file> [--allow-mutating]",
+            "#",
+            "# NOTE: One step per injectable parameter — each tests a different injection point.",
+            "#       Not all suggested payloads may be applicable to every parameter.",
             "",
         ]
 
         # Module body
         lines += [
-            f"version: \"1\"",
+            "version: \"1\"",
             f"name: \"{_slugify(registry.server_name)}-{_slugify(tool.name)}-probe\"",
-            f"description: >",
+            "description: >",
             f"  Custom probe for {_yaml_comment(tool.name)}.",
         ]
         if tool.description:
             desc_wrapped = _sanitize_desc(tool.description)[:200]
             lines.append(f"  Tool description: {desc_wrapped}")
-        lines.append(f"  Edit payloads and matchers before running.")
+        lines.append("  Edit payloads and matchers before running.")
         lines.append("")
 
         lines += [
-            f"requires:",
-            f"  tools:",
+            "requires:",
+            "  tools:",
             f"    - {_yaml_dq(re.escape(tool.name))}",
-            f"",
-            f"steps:",
+            "",
+            "steps:",
         ]
 
         # One mutate step per injectable parameter.
@@ -543,11 +540,11 @@ class ScaffoldGenerator:
             is_first = i == 0
             lines += [
                 f"  - id: {step_id}",
-                f"    type: mutate",
-                f"    method: tools/call",
-                f"    params:",
+                "    type: mutate",
+                "    method: tools/call",
+                "    params:",
                 f"      name: {_yaml_dq(tool.name)}",
-                f"      arguments:",
+                "      arguments:",
                 f"        {_yaml_key(inj_param.name)}: \"${{payload}}\"  # injection point",
             ]
 
@@ -570,7 +567,7 @@ class ScaffoldGenerator:
                     lines.append(f"        # {_yaml_comment(ep.name)}: {ph}  # optional")
 
             # Payloads block (comments inside the block).
-            lines.append(f"    payloads:")
+            lines.append("    payloads:")
             lines.append(f"      # Suggested for '{_yaml_comment(inj_param.name)}' ({step_category}) -- uncomment and edit:")
             for p in step_payloads:
                 lines.append(f"      # - \"{p}\"")
@@ -581,12 +578,12 @@ class ScaffoldGenerator:
 
             # Matchers — all commented out (safe starting point).
             lines += [
-                f"    matchers:",
-                f"      # - type: jsonrpc_success",
-                f"      # Uncomment jsonrpc_success and add a content-evidence matcher:",
+                "    matchers:",
+                "      # - type: jsonrpc_success",
+                "      # Uncomment jsonrpc_success and add a content-evidence matcher:",
             ]
             for m in step_matchers:
-                lines.append(f"      # - type: regex")
+                lines.append("      # - type: regex")
                 lines.append(f"      #   pattern: \"{m}\"")
             lines.append("")
 
@@ -605,16 +602,12 @@ class ScaffoldGenerator:
         has no placeholders, a single step probes the raw template URI.
         """
         tpl = srt.template
-        primary = srt.primary_placeholder
-        category = primary.category if primary else "idor"
-        payloads = _PAYLOAD_SUGGESTIONS.get(category, _PAYLOAD_SUGGESTIONS["idor"])
-        matchers = _MATCHER_SUGGESTIONS.get(category, _MATCHER_SUGGESTIONS["idor"])
 
         lines: list[str] = []
 
         # Header comment
         lines += [
-            f"# AUTO-GENERATED SCAFFOLD — review and customize before running",
+            "# AUTO-GENERATED SCAFFOLD — review and customize before running",
             f"# Server   : {_yaml_comment(registry.server_name)} (Protocol {registry.protocol_version})",
             f"# Template : {_yaml_comment(tpl.uri_template)}",
         ]
@@ -624,15 +617,15 @@ class ScaffoldGenerator:
             ph_names = ", ".join(repr(p.name) for p in srt.placeholders)
             lines.append(f"# Placeholders: {ph_names}")
         lines += [
-            f"#",
-            f"# HOW TO USE:",
-            f"#   1. Uncomment the payloads you want to test",
-            f"#   2. Adjust the regex matcher pattern",
-            f"#   3. Run: mcp-striker strike --from-enum <snapshot.json> \\",
-            f"#            --module <this-file> [--allow-mutating]",
-            f"#",
+            "#",
+            "# HOW TO USE:",
+            "#   1. Uncomment the payloads you want to test",
+            "#   2. Adjust the regex matcher pattern",
+            "#   3. Run: mcp-striker strike --from-enum <snapshot.json> \\",
+            "#            --module <this-file> [--allow-mutating]",
+            "#",
             f"# NOTE: ${'{payload}'} is injected as the full URI for resources/read.",
-            f"#       Replace payload URIs with the correct scheme/format for this server.",
+            "#       Replace payload URIs with the correct scheme/format for this server.",
             "",
         ]
 
@@ -640,19 +633,19 @@ class ScaffoldGenerator:
         server_slug = _slugify(registry.server_name)
 
         lines += [
-            f"version: \"1\"",
+            "version: \"1\"",
             f"name: \"{server_slug}-{tpl_slug}-probe\"",
-            f"description: >",
+            "description: >",
             f"  Custom probe for resource template {_yaml_comment(tpl.uri_template)}.",
-            f"  Edit payloads and matchers before running.",
-            f"",
-            f"requires:",
-            f"  capabilities:",
-            f"    - resources",
-            f"  resource_templates:",
+            "  Edit payloads and matchers before running.",
+            "",
+            "requires:",
+            "  capabilities:",
+            "    - resources",
+            "  resource_templates:",
             f"    - {_yaml_dq(re.escape(tpl.uri_template.split('{')[0]))}",
-            f"",
-            f"steps:",
+            "",
+            "steps:",
         ]
 
         if srt.placeholders:
@@ -672,37 +665,37 @@ class ScaffoldGenerator:
 
                 lines += [
                     f"  - id: probe_{_yaml_id(ph.name)}",
-                    f"    type: mutate",
-                    f"    method: resources/read",
-                    f"    params:",
+                    "    type: mutate",
+                    "    method: resources/read",
+                    "    params:",
                     f"      uri: {_yaml_dq(example_uri)}  # injection point: {_yaml_comment(ph.name)} ({step_category})",
-                    f"    payloads:",
+                    "    payloads:",
                     f"      # Suggested for '{'{'}{_yaml_comment(ph.name)}{'}'}' ({step_category}) -- uncomment and edit:",
                 ]
                 for p in step_payloads:
                     lines.append(f"      # - \"{p}\"")
                 lines += [
-                    f"    matchers:",
-                    f"      # - type: jsonrpc_success",
-                    f"      # Uncomment jsonrpc_success and add a content-evidence matcher:",
+                    "    matchers:",
+                    "      # - type: jsonrpc_success",
+                    "      # Uncomment jsonrpc_success and add a content-evidence matcher:",
                 ]
                 for m in step_matchers:
-                    lines.append(f"      # - type: regex")
+                    lines.append("      # - type: regex")
                     lines.append(f"      #   pattern: \"{m}\"")
                 lines.append("")
         else:
             # No placeholders — probe the raw template URI.
             lines += [
-                f"  - id: probe",
-                f"    type: mutate",
-                f"    method: resources/read",
-                f"    params:",
+                "  - id: probe",
+                "    type: mutate",
+                "    method: resources/read",
+                "    params:",
                 f"      uri: {_yaml_dq(tpl.uri_template)}",
-                f"    payloads: []",
-                f"    matchers:",
-                f"      # - type: jsonrpc_success",
-                f"      # - type: regex",
-                f"      #   pattern: \"your-expected-pattern-here\"",
+                "    payloads: []",
+                "    matchers:",
+                "      # - type: jsonrpc_success",
+                "      # - type: regex",
+                "      #   pattern: \"your-expected-pattern-here\"",
                 "",
             ]
 
@@ -722,8 +715,8 @@ class ScaffoldGenerator:
 
         if sample_response == SAMPLE_BLOCKED:
             lines += [
-                f"    # SAMPLE RESPONSE: not collected — tool classified as mutating.",
-                f"    # Run scaffold with --allow-mutating to collect a sample response.",
+                "    # SAMPLE RESPONSE: not collected — tool classified as mutating.",
+                "    # Run scaffold with --allow-mutating to collect a sample response.",
             ]
             return lines
 
@@ -737,11 +730,11 @@ class ScaffoldGenerator:
             res_str = res_str[:_SAMPLE_MAX_LEN] + "…"
 
         lines += [
-            f"    # SAMPLE RESPONSE (probe with empty value \"\"):",
+            "    # SAMPLE RESPONSE (probe with empty value \"\"):",
             f"    # REQ: {_yaml_comment(req_str)}",
             f"    # RES: {_yaml_comment(res_str)}",
-            f"    # NOTE: isError:true responses are NOT findings (filtered by is_success).",
-            f"    # Configure the regex matcher to match the SUCCESS case, not the error case.",
+            "    # NOTE: isError:true responses are NOT findings (filtered by is_success).",
+            "    # Configure the regex matcher to match the SUCCESS case, not the error case.",
         ]
         return lines
 

@@ -19,11 +19,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-
 
 # ---------------------------------------------------------------------------
 # Request counter for unique response IDs
@@ -40,10 +38,10 @@ _lock = threading.Lock()
 class VulnerableHandler(BaseHTTPRequestHandler):
     """Handles POST /mcp — no security checks whatsoever."""
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+    def log_message(self, format: str, *args: object) -> None:
         pass  # suppress access log noise during tests
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         if self.path != "/mcp":
             self._send(404, {"error": "not found"})
             return

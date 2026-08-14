@@ -230,7 +230,7 @@ class StdioTransport(McpTransport):
     async def send(
         self,
         request: JsonRpcRequest,
-        context: TransportContext,  # noqa: ARG002  (reserved for future use)
+        context: TransportContext,
     ) -> TransportExchange:
         """Write *request* to stdin and return the server's response.
 

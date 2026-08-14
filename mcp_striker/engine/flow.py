@@ -5,7 +5,7 @@ Execution model
 Steps run **sequentially** within a flow: setup → mutate → cleanup.
 State (extracted variables) flows forward through a ``FlowContext``.
 
-Within a **mutate** step, all (param_set × payload) combinations run
+Within a **mutate** step, the cross-product of parameter sets and payloads runs
 **concurrently** using the ``asyncio.Semaphore`` passed at construction.
 This mirrors the StrikeEngine concurrency model.
 
@@ -43,10 +43,9 @@ from typing import Any
 
 from jsonpath_ng import parse as jp_parse
 
-from mcp_striker.dsl.context import FlowContext
+from mcp_striker.dsl.context import MATCHED_PARAM_VAR, MATCHED_TOOL_VAR, FlowContext
 from mcp_striker.dsl.parser import YAMLFlowParser
 from mcp_striker.dsl.schema import FlowModule, StepSpec
-from mcp_striker.dsl.context import MATCHED_PARAM_VAR, MATCHED_TOOL_VAR
 from mcp_striker.dsl.selector import ModuleSelector
 from mcp_striker.evidence import EvidenceGenerator
 from mcp_striker.models import (
@@ -213,7 +212,7 @@ class FlowEngine:
         )
         try:
             exchange = await self._send_checked(request)
-        except Exception as exc:
+        except Exception:
             if not step.optional:
                 raise
             return
@@ -254,7 +253,7 @@ class FlowEngine:
         context: FlowContext,
         module_name: str,
     ) -> list[str]:
-        """Expand param sets × payloads, run concurrently, collect findings.
+        """Expand the parameter/payload cross-product and collect findings.
 
         If ``step.payloads`` is empty (e.g. an unedited scaffold file), the
         step is silently skipped — zero probes are sent.  This is the
@@ -278,7 +277,7 @@ class FlowEngine:
             context.set("payload", payload)
             try:
                 param_sets = context.resolve_params(dict(step.params))
-            except KeyError as exc:
+            except KeyError:
                 # A referenced variable has not been extracted yet.
                 # Skip this payload — the setup step probably failed.
                 continue

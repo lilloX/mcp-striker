@@ -16,24 +16,24 @@ import argparse
 import json
 import queue
 import threading
-import time
 import uuid
-from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import ClassVar
 
 
 class SseVulnerableHandler(BaseHTTPRequestHandler):
     # Shared state: session_id → queue of SSE messages
-    sessions: dict[str, queue.Queue] = {}
+    sessions: ClassVar[dict[str, queue.Queue[object]]] = {}
     lock = threading.Lock()
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     # ------------------------------------------------------------------
     # GET /sse — open SSE stream
     # ------------------------------------------------------------------
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         if not self.path.startswith("/sse"):
             self.send_error(404)
             return
@@ -77,7 +77,7 @@ class SseVulnerableHandler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------------
     # POST /messages — receive JSON-RPC requests
     # ------------------------------------------------------------------
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         from urllib.parse import parse_qs, urlparse
         parsed = urlparse(self.path)
         if not parsed.path.startswith("/messages"):
@@ -185,7 +185,6 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), SseVulnerableHandler)
-    import sys
     print(server.server_address[1], flush=True)
     server.serve_forever()
 

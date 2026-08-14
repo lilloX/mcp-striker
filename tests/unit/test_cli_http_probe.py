@@ -9,7 +9,6 @@ Covers:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -18,7 +17,6 @@ import typer
 
 from mcp_striker.cli import _http_probe
 from mcp_striker.registry import CapabilityRegistry
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -132,6 +130,7 @@ async def test_from_enum_stdio_registry_exits(tmp_path: Path) -> None:
 
 def test_missing_url_and_from_enum_exits() -> None:
     from typer.testing import CliRunner
+
     from mcp_striker.cli import app
 
     runner = CliRunner()

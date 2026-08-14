@@ -14,7 +14,12 @@ Rules (applied in order):
 
 from __future__ import annotations
 
-from mcp_striker.models import JsonRpcRequest, SafetyContext, SafetyDecision, SafetyVerdict
+from mcp_striker.models import (
+    JsonRpcRequest,
+    SafetyContext,
+    SafetyDecision,
+    SafetyVerdict,
+)
 from mcp_striker.tool_classifier import ToolClassification, ToolClassifier
 
 # Methods that are always permitted regardless of --allow-mutating.

@@ -77,7 +77,8 @@ def _start_http_server(script: Path) -> tuple[subprocess.Popen, str]:
 def http_tool_server():
     proc, url = _start_http_server(SERVERS_DIR / "http_tool_traversal.py")
     yield url
-    proc.kill(); proc.wait()
+    proc.kill()
+    proc.wait()
 
 
 # ---------------------------------------------------------------------------

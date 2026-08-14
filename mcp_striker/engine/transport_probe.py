@@ -13,7 +13,7 @@ whether the server's response confirms a vulnerability.
 from __future__ import annotations
 
 from mcp_striker.evidence import EvidenceGenerator
-from mcp_striker.models import JsonRpcRequest, SafetyContext, TransportContext
+from mcp_striker.models import JsonRpcRequest, TransportContext
 from mcp_striker.modules.transport_probes import (
     ORIGIN_PROBE,
     PROTOCOL_VERSION_PROBE,
@@ -28,7 +28,7 @@ _INVALID_VERSION = "1900-01-01"
 _FAKE_SESSION_ID = "00000000-0000-0000-0000-000000000000"
 
 # Client info sent during initialize probes.
-_CLIENT_INFO: dict[str, str] = {"name": "mcp-striker-probe", "version": "0.1.0"}
+_CLIENT_INFO: dict[str, str] = {"name": "mcp-striker-probe", "version": "1.0.0"}
 
 
 class TransportProbeEngine:

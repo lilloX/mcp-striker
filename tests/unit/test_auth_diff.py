@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -19,7 +18,7 @@ from mcp_striker.models import (
     JsonRpcResponse,
     TransportExchange,
 )
-from mcp_striker.ownership import OwnershipRegistry, OwnershipError
+from mcp_striker.ownership import OwnershipError, OwnershipRegistry
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 IDENTITIES_YAML = FIXTURES_DIR / "identities" / "two_tenants.yaml"
@@ -106,7 +105,7 @@ def test_ownership_registry_all_pairs() -> None:
     reg = OwnershipRegistry()
     reg.load(OWNERSHIP_YAML)
     pairs = reg.all_pairs()
-    # 2 resources × 1 denied identity each = 2 pairs
+    # 2 resources x 1 denied identity each = 2 pairs
     assert len(pairs) == 2
     uris = {r.uri for r, _, _ in pairs}
     assert "resource://tenant-a/secret.txt" in uris
@@ -241,7 +240,7 @@ def test_redact_extra_key_by_name() -> None:
 
 def test_redact_extra_key_not_leaked_in_diff_finding(tmp_path: Path) -> None:
     """promote_diff must redact identity credentials from BOTH exchanges."""
-    from mcp_striker.models import DiffResult, DiffVerdict
+    from mcp_striker.models import DiffVerdict
 
     owner = _ok_exchange("TOP SECRET DATA")
     # Simulate the owner exchange having a custom auth header in the request.
@@ -283,7 +282,7 @@ def test_redact_extra_key_not_leaked_in_diff_finding(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_promote_diff_idor_produces_correct_schema(tmp_path: Path) -> None:
-    from mcp_striker.models import DiffResult, DiffVerdict
+    from mcp_striker.models import DiffVerdict
 
     diff = DiffResult(
         verdict=DiffVerdict.IDOR_CONFIRMED,
@@ -311,7 +310,7 @@ async def test_promote_diff_idor_produces_correct_schema(tmp_path: Path) -> None
 @pytest.mark.asyncio
 async def test_promote_diff_data_leaked_flag_false_when_low_similarity(tmp_path: Path) -> None:
     """data_leaked must be False when similarity < 0.8 even if verdict is IDOR."""
-    from mcp_striker.models import DiffResult, DiffVerdict
+    from mcp_striker.models import DiffVerdict
 
     diff = DiffResult(
         verdict=DiffVerdict.IDOR_CONFIRMED,

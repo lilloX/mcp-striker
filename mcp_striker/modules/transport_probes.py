@@ -27,7 +27,6 @@ from dataclasses import dataclass
 
 from mcp_striker.models import TransportExchange
 
-
 # ---------------------------------------------------------------------------
 # Matcher primitive (identical contract to resource_path_traversal.Matcher)
 # ---------------------------------------------------------------------------

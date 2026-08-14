@@ -21,7 +21,6 @@ from dataclasses import dataclass
 
 from mcp_striker.models import TransportExchange
 
-
 # ---------------------------------------------------------------------------
 # Matcher primitive
 # ---------------------------------------------------------------------------

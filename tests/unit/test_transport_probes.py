@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from mcp_striker.models import (
     JsonRpcError,
     JsonRpcRequest,
@@ -16,7 +14,6 @@ from mcp_striker.modules.transport_probes import (
     SESSION_REUSE_PROBE,
     TRANSPORT_PROBES,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
