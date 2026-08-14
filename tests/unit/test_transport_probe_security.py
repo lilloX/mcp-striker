@@ -40,6 +40,33 @@ def test_probe_transports_forward_verify_ssl_and_path() -> None:
         assert transport._endpoint == "https://target.example/custom-mcp"
 
 
+def test_probe_transports_forward_auth_and_override_probe_headers() -> None:
+    engine = _engine(
+        extra_headers={
+            "Authorization": "Bearer test-token",
+            "origin": "https://operator.example",
+            "mcp-protocol-version": "operator-version",
+            "mcp-session-id": "operator-session",
+        }
+    )
+
+    pairs = engine._probe_transport_pairs()
+    expected = [
+        ("origin", "http://evil.attacker.example.com"),
+        ("mcp-protocol-version", "1900-01-01"),
+        ("mcp-session-id", "00000000-0000-0000-0000-000000000000"),
+    ]
+    for (_probe, transport, _request), (probe_key, probe_value) in zip(
+        pairs, expected, strict=True
+    ):
+        headers = {
+            key.lower(): value
+            for key, value in transport._extra_headers.items()
+        }
+        assert headers["authorization"] == "Bearer test-token"
+        assert headers[probe_key] == probe_value
+
+
 def test_probe_transports_default_to_verify_and_mcp_path() -> None:
     engine = _engine()
     for _probe, transport, _request in engine._probe_transport_pairs():

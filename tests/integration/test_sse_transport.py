@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import subprocess
 import sys
 import time
@@ -84,11 +85,12 @@ async def test_sse_tool_path_traversal(sse_server: str, tmp_path: Path) -> None:
         await client.initialize()
         registry = await client.enumerate_capabilities()
 
+        findings_dir = tmp_path / "findings"
         engine = FlowEngine(
             transport=transport,
             registry=registry,
             recorder=SessionRecorder(session_dir=tmp_path / "session"),
-            evidence_generator=EvidenceGenerator(findings_dir=tmp_path / "findings"),
+            evidence_generator=EvidenceGenerator(findings_dir=findings_dir),
             safety_engine=SafetyPolicyEngine(),
             safety_context=SafetyContext(allow_mutating=False),
             transport_context=context,
@@ -102,6 +104,8 @@ async def test_sse_tool_path_traversal(sse_server: str, tmp_path: Path) -> None:
         await transport.close()
 
     assert finding_ids, "Expected path traversal findings via SSE transport"
+    finding = json.loads((findings_dir / f"{finding_ids[0]}.json").read_text())
+    assert finding["transport"] == "sse"
 
 
 @pytest.mark.asyncio

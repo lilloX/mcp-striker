@@ -56,6 +56,17 @@ class TransportProbeEngine:
         self._verify_ssl = verify_ssl
         self._path = path
 
+    def _headers_for_probe(self, overrides: dict[str, str]) -> dict[str, str]:
+        """Merge operator headers while keeping probe controls authoritative."""
+        overridden = {key.lower() for key in overrides}
+        headers = {
+            key: value
+            for key, value in self._extra_headers.items()
+            if key.lower() not in overridden
+        }
+        headers.update(overrides)
+        return headers
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -124,7 +135,9 @@ class TransportProbeEngine:
                     timeout=self._timeout,
                     path=self._path,
                     verify_ssl=self._verify_ssl,
-                    origin=_HOSTILE_ORIGIN,
+                    extra_headers=self._headers_for_probe(
+                        {"Origin": _HOSTILE_ORIGIN}
+                    ),
                 ),
                 init_request,
             ),
@@ -135,7 +148,9 @@ class TransportProbeEngine:
                     timeout=self._timeout,
                     path=self._path,
                     verify_ssl=self._verify_ssl,
-                    extra_headers={"MCP-Protocol-Version": _INVALID_VERSION},
+                    extra_headers=self._headers_for_probe(
+                        {"MCP-Protocol-Version": _INVALID_VERSION}
+                    ),
                 ),
                 bad_version_request,
             ),
@@ -146,7 +161,9 @@ class TransportProbeEngine:
                     timeout=self._timeout,
                     path=self._path,
                     verify_ssl=self._verify_ssl,
-                    extra_headers={"MCP-Session-Id": _FAKE_SESSION_ID},
+                    extra_headers=self._headers_for_probe(
+                        {"MCP-Session-Id": _FAKE_SESSION_ID}
+                    ),
                 ),
                 session_probe_request,
             ),

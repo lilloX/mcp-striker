@@ -91,9 +91,7 @@ class FlowEngine:
         self._safety = safety_engine
         self._safety_ctx = safety_context
         self._transport_ctx = transport_context
-        self._transport_label = (
-            "streamable-http" if transport_context.target_url else "stdio"
-        )
+        self._transport_label = transport_context.transport_type
         self._semaphore = semaphore
         self._dry_run = dry_run
         # Count of probes that failed to complete (transport error, matcher or

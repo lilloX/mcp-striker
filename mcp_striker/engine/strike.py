@@ -161,7 +161,7 @@ class StrikeEngine:
                 exchange=exchange,
                 matchers_hit=probe.matchers_hit(exchange),
                 module="resource-path-traversal",
-                transport="stdio",
+                transport=self._transport_ctx.transport_type,
                 protocol_version=self._registry.protocol_version,
                 severity="high",
                 session_id=self._transport_ctx.session_id,

@@ -17,6 +17,7 @@ Test matrix:
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import time
@@ -96,7 +97,11 @@ async def _enum_and_strike(
     tmp_path: Path,
 ) -> tuple[object, list[str]]:
     transport = StreamableHttpTransport(base_url=url, timeout=10.0)
-    context = TransportContext(session_id="test", target_url=url)
+    context = TransportContext(
+        session_id="test",
+        target_url=url,
+        transport_type="streamable-http",
+    )
 
     await transport.connect()
     try:
@@ -153,6 +158,8 @@ async def test_http_enum_finds_templates(python_vulnerable_server: str, tmp_path
 async def test_http_strike_finds_path_traversal(python_vulnerable_server: str, tmp_path: Path) -> None:
     _, finding_ids = await _enum_and_strike(python_vulnerable_server, tmp_path)
     assert finding_ids, "Expected at least one path-traversal finding via HTTP"
+    finding = json.loads((tmp_path / "findings" / f"{finding_ids[0]}.json").read_text())
+    assert finding["transport"] == "streamable-http"
 
 
 @pytest.mark.asyncio
