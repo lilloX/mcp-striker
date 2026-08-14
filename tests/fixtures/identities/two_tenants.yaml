@@ -1,0 +1,15 @@
+version: "1"
+identities:
+  - name: alice
+    description: "Tenant A — legitimate resource owner"
+    auth:
+      bearer: "alice-secret-token"
+      env:
+        MCP_AUTH_TOKEN: "alice-secret-token"
+
+  - name: bob
+    description: "Tenant B — attacker trying to access Alice's resources"
+    auth:
+      bearer: "bob-secret-token"
+      env:
+        MCP_AUTH_TOKEN: "bob-secret-token"

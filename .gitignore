@@ -1,0 +1,33 @@
+# mcp-striker runtime output — NEVER commit
+.mcp-striker/
+
+# Engagement assets — never commit (see CLAUDE.md).
+# modules/servers/ ships empty; scaffold populates it per engagement with
+# real target tool names and sample responses.
+modules/servers/*
+!modules/servers/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+venv/
+dist/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (TypeScript fixture server)
+node_modules/
+
+report.html
+
+/.hypothesis/
+.idea/
+CLAUDE.md
+DECISIONS.md
+PROMPT.md
+/.claude/

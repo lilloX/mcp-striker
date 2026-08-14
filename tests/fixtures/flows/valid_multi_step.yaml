@@ -1,0 +1,33 @@
+version: "1"
+name: "test-multi-step"
+description: "Two-step fixture: list resources then read each one"
+
+requires:
+  capabilities:
+    - resources
+
+steps:
+  - id: list
+    type: setup
+    method: resources/list
+    params: {}
+    extract:
+      uris: "$.result.resources[*].uri"
+
+  - id: read
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${uris}"
+    matchers:
+      - type: jsonrpc_success
+      # Content evidence required alongside jsonrpc_success; "\S" = the read
+      # returned some non-empty body.
+      - type: regex
+        pattern: "\\S"
+
+  - id: done
+    type: cleanup
+    method: notifications/cancelled
+    params: {}
+    optional: true

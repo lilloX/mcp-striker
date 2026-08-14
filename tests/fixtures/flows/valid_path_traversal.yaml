@@ -1,0 +1,23 @@
+version: "1"
+name: "test-path-traversal"
+description: "Minimal path traversal fixture for unit tests"
+
+requires:
+  capabilities:
+    - resources
+  resource_templates:
+    - "file://"   # server must expose at least one file:// URI template
+
+steps:
+  - id: probe
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${payload}"
+    payloads:
+      - "file:///etc/passwd"
+      - "file:///etc/hosts"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "root:x:0:0|localhost"

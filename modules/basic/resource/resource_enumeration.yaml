@@ -1,0 +1,29 @@
+version: "1"
+name: "resource-enumeration"
+severity: high
+description: >
+  Enumerate concrete resources exposed by the server, then read each one
+  and scan for sensitive content patterns (credentials, keys, PII).
+  Does not inject payloads — tests what the server intentionally exposes.
+
+requires:
+  capabilities:
+    - resources
+
+steps:
+  - id: list_resources
+    type: setup
+    method: resources/list
+    params: {}
+    extract:
+      resource_uris: "$.result.resources[*].uri"
+
+  - id: read_each_resource
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${resource_uris}"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "(password|passwd|secret|token|api[_-]?key|private[_-]?key|BEGIN (RSA|EC|OPENSSH)|sk_live_|sk_test_|AKIA[A-Z0-9]{16})"

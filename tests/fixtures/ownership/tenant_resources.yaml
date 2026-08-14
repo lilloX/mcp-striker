@@ -1,0 +1,11 @@
+version: "1"
+resources:
+  - uri: "resource://tenant-a/secret.txt"
+    owner: alice
+    denied:
+      - bob
+
+  - uri: "resource://tenant-a/private.key"
+    owner: alice
+    denied:
+      - bob

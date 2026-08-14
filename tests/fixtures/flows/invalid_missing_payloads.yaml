@@ -1,0 +1,14 @@
+version: "1"
+name: "invalid-missing-payloads"
+description: "Should fail validation: ${payload} referenced but payloads is empty"
+
+steps:
+  - id: probe
+    type: mutate
+    method: resources/read
+    params:
+      uri: "${payload}"
+    payloads: []
+    # Matchers left empty (as in a real scaffold file); the step is skipped at
+    # runtime because payloads is empty, so no probe is sent.
+    matchers: []
